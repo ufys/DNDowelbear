@@ -1,0 +1,12 @@
+{
+  "name": "character-sheet",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "icon": "/icon.svg",
+  "background": "src/index.tsx",
+  "permissions": [],
+  "metadata": {
+    "name": "D&D 5e Character Sheet",
+    "description": "Интерактивный лист персонажа для Owlbear Rodeo"
+  }
+}
