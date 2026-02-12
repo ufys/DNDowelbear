@@ -1,0 +1,28 @@
+{
+  "name": "owlbear-character-sheet",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "webpack --mode production",
+    "dev": "webpack serve --mode development"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.3.0",
+    "@owlbear-rodeo/sdk": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "typescript": "^5.0.0",
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1",
+    "ts-loader": "^9.4.2",
+    "postcss": "^8.4.21",
+    "autoprefixer": "^10.4.14",
+    "css-loader": "^6.7.3",
+    "style-loader": "^3.3.1",
+    "postcss-loader": "^7.0.2"
+  }
+}
