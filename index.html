@@ -2,134 +2,45 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <!-- ИСПРАВЛЕНО: Правильная ссылка на SDK Owlbear Rodeo -->
+  <title>Лист Персонажа</title>
+  <!-- Подключение SDK Owlbear Rodeo -->
   <script src="https://unpkg.com"></script>
   <style>
-    :root { --p-color: #6366f1; --bg: #1a1a1a; --card: #262626; --text: #eee; }
-    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 0; margin: 0; width: 100%; overflow-x: hidden; border-radius: 8px; }
-    
-    #window-header { background: #312e81; height: 32px; display: flex; justify-content: space-between; align-items: center; cursor: grab; position: sticky; top: 0; z-index: 10001; }
-    .window-controls button { background: transparent; border: none; color: white; width: 30px; height: 32px; cursor: pointer; }
-    
-    .tabs { display: flex; background: #222; border-bottom: 1px solid #444; }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #888; cursor: pointer; font-size: 11px; font-weight: bold; }
-    .tab-btn.active { color: white; border-bottom: 2px solid var(--p-color); background: #2a2a2a; }
-
-    .content { padding: 15px; }
-    .hidden { display: none; }
-    input, select, textarea { background: #333; color: white; border: 1px solid #444; border-radius: 4px; padding: 4px; }
-    
-    .portrait-frame { width: 100px; height: 100px; margin: 0 auto 15px; border: 3px solid var(--p-color); border-radius: 10px; overflow: hidden; cursor: pointer; position: relative; background: #222; }
-    .portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
-
-    .stats-row { display: flex; justify-content: space-between; align-items: center; background: #2d0a0a; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #444; }
-    #shield-icon { fill: #4338ca; transition: 0.3s; }
-
-    .stat-card { background: var(--card); border: 1px solid #333; border-radius: 6px; padding: 8px; margin-bottom: 6px; cursor: pointer; }
-    .skill-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-top: 1px solid #333; margin-top: 4px; }
-
-    #dice-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-    .die-animation { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border-radius: 8px; }
+    body { background-color: #1e1e2e; color: white; font-family: sans-serif; padding: 20px; }
+    .stat-box { border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    input { background: #2d2d3d; border: 1px solid #555; color: white; padding: 5px; width: 50px; }
+    button { cursor: pointer; background: #5865f2; border: none; color: white; padding: 8px; border-radius: 4px; }
   </style>
 </head>
 <body>
-
-<div id="window-header">
-  <span style="font-size: 11px; margin-left: 10px;">D&D INTERACTIVE SHEET</span>
-  <div class="window-controls">
-    <button onclick="OBR.action.setHeight(32)">—</button>
-    <button onclick="OBR.action.setHeight(600); OBR.action.setWidth(350)">🗖</button>
-  </div>
-</div>
-
-<div id="blood-overlay"></div>
-<div id="dice-overlay"></div>
-
-<div class="tabs">
-  <button class="tab-btn active" onclick="showTab('stats', this)">СТАТЫ</button>
-  <button class="tab-btn" onclick="showTab('weapons', this)">БОЙ</button>
-  <button class="tab-btn" onclick="showTab('spells', this)">МАГИЯ</button>
-  <button class="tab-btn" onclick="showTab('inv', this)">СУМКА</button>
-</div>
-
-<div class="content">
-  <div id="tab-stats">
-    <div class="portrait-frame" onclick="document.getElementById('p-input').classList.toggle('hidden')">
-      <img id="charPortrait" src="https://www.svgrepo.com">
-    </div>
-    <input type="text" id="p-input" class="hidden" placeholder="Ссылка на фото..." style="width:90%; margin-bottom:10px;" oninput="updatePortrait(this.value)">
-    
-    <input type="text" id="charName" placeholder="Имя героя" style="width: 93%; font-weight: bold; margin-bottom: 10px;">
-
-    <div class="stats-row">
-      <div>
-        <div style="font-size:10px; color:#888;">HP</div>
-        <input type="number" id="currentHp" style="width:40px;"> / <input type="number" id="maxHp" style="width:40px;">
-      </div>
-      <div style="position:relative; display:flex; align-items:center; justify-content:center;">
-        <svg id="shield-icon" viewBox="0 0 24 24" width="45" height="45"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-        <input type="number" id="charAC" value="10" style="position:absolute; width:20px; background:transparent; border:none; text-align:center; color:white;">
-      </div>
-      <button onclick="rollInitiative()" style="background:#f59e0b; border:none; padding:10px; border-radius:4px; font-weight:bold;">INIT</button>
-    </div>
-    <div id="main-stats"></div>
-  </div>
-
-  <div id="tab-weapons" class="hidden">
-    <button onclick="addWeapon()" style="width:100%; background:#166534; color:white; padding:8px; border:none;">+ ОРУЖИЕ</button>
-    <div id="weapon-list"></div>
-  </div>
-
-  <div id="tab-spells" class="hidden">
-    <div id="spell-slots-container"></div>
-  </div>
-
-  <div id="tab-inv" class="hidden">
-    <span>Вес: <b id="totalWeight">0</b></span>
-    <div id="inventory-list"></div>
-  </div>
-</div>
-
-<script>
-// ИСПРАВЛЕНО: Безопасная инициализация OBR
-const OBR = window.OBR;
-
-async function init() {
-  if (!OBR) return;
-  await OBR.onReady();
+  <h2>Лист персонажа</h2>
   
-  // Рендерим базовые статы, если пустые
-  const container = document.getElementById('main-stats');
-  if (container.innerHTML === "") {
-    const stats = ["СИЛ", "ЛОВ", "ТЕЛ", "ИНТ", "МУД", "ХАР"];
-    stats.forEach(s => {
-      container.innerHTML += `
-        <div class="stat-card" onclick="roll('${s}', 'Проверка')">
-          <b>${s}</b> <input type="number" id="mod-${s}" value="0" style="width:30px;" onclick="event.stopPropagation()">
-        </div>`;
+  <div class="stat-box">
+    <label>СИЛА: </label>
+    <input type="number" id="strength" value="10">
+    <button onclick="rollStat('Сила')">Бросок</button>
+  </div>
+
+  <script>
+    // Инициализация связи с Owlbear Rodeo
+    const OBR = window.OBR;
+
+    async function rollStat(statName) {
+      const val = document.getElementById('strength').value;
+      const modifier = Math.floor((val - 10) / 2);
+      const roll = Math.floor(Math.random() * 20) + 1;
+      const total = roll + modifier;
+
+      // Отправка сообщения в чат Owlbear (зависит от настроек комнаты)
+      console.log(`Бросок ${statName}: ${roll} + ${modifier} = ${total}`);
+      
+      // Пример уведомления игроков (если есть права)
+      await OBR.notification.show(`Игрок выбросил ${statName}: ${total}`);
+    }
+
+    OBR.onReady(() => {
+      console.log("Лист персонажа готов к работе в Owlbear Rodeo!");
     });
-  }
-}
-
-function showTab(tab, btn) {
-  document.querySelectorAll('.content > div').forEach(d => d.classList.add('hidden'));
-  document.getElementById('tab-' + tab).classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-async function roll(stat, label) {
-  const mod = parseInt(document.getElementById('mod-' + stat).value) || 0;
-  const d20 = Math.floor(Math.random() * 20) + 1;
-  OBR.notification.show(`${label} (${stat}): ${d20} + ${mod} = ${d20+mod}`);
-}
-
-function updatePortrait(url) {
-  document.getElementById('charPortrait').src = url;
-}
-
-// Запуск при загрузке
-window.onload = init;
-</script>
+  </script>
 </body>
 </html>
