@@ -1,46 +1,180 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Лист Персонажа</title>
-  <!-- Подключение SDK Owlbear Rodeo -->
-  <script src="https://unpkg.com"></script>
-  <style>
-    body { background-color: #1e1e2e; color: white; font-family: sans-serif; padding: 20px; }
-    .stat-box { border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
-    input { background: #2d2d3d; border: 1px solid #555; color: white; padding: 5px; width: 50px; }
-    button { cursor: pointer; background: #5865f2; border: none; color: white; padding: 8px; border-radius: 4px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBR Character Sheet</title>
+    <script src="https://unpkg.com"></script>
+    <style>
+        :root {
+            --bg-color: #12121e;
+            --card-bg: #1c1c2d;
+            --accent: #5865f2;
+            --text: #e0e0e0;
+            --border: #30304a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .char-name { font-weight: bold; font-size: 1.2rem; border: none; background: transparent; color: white; border-bottom: 1px dashed var(--accent); }
+
+        /* Сетка характеристик */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .stat-title { font-weight: bold; color: var(--accent); text-transform: uppercase; font-size: 0.8rem; }
+        .stat-main-input { width: 40px; background: #000; border: 1px solid var(--accent); color: white; text-align: center; font-size: 1.1rem; border-radius: 4px; }
+
+        .sub-stat { display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 5px; opacity: 0.8; }
+        .mod-val { font-weight: bold; color: #fff; }
+
+        /* Навыки */
+        .skills-list { margin-top: 15px; background: var(--card-bg); border-radius: 8px; padding: 10px; }
+        .skill-item { display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #2a2a3d; }
+        .skill-item:last-child { border: none; }
+        .skill-dot { width: 8px; height: 8px; border: 1px solid var(--accent); border-radius: 50%; margin-right: 8px; cursor: pointer; }
+        .skill-dot.active { background: var(--accent); }
+        .skill-name { flex-grow: 1; }
+        .skill-mod { font-weight: bold; width: 25px; text-align: right; }
+
+        button { cursor: pointer; transition: 0.2s; }
+        button:hover { filter: brightness(1.2); }
+    </style>
 </head>
 <body>
-  <h2>Лист персонажа</h2>
-  
-  <div class="stat-box">
-    <label>СИЛА: </label>
-    <input type="number" id="strength" value="10">
-    <button onclick="rollStat('Сила')">Бросок</button>
-  </div>
 
-  <script>
-    // Инициализация связи с Owlbear Rodeo
+<div class="header">
+    <input type="text" id="charName" class="char-name" value="Безымянный персонаж" onchange="saveData()">
+    <div>УРОВЕНЬ: <input type="number" id="level" value="1" style="width:30px; background:none; border:none; color:white;" onchange="saveData()"></div>
+</div>
+
+<div class="stats-grid" id="statsContainer">
+    <!-- Генерируется через JS -->
+</div>
+
+<div class="skills-list" id="skillsContainer">
+    <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid var(--accent);">НАВЫКИ</div>
+    <!-- Генерируется через JS -->
+</div>
+
+<script>
     const OBR = window.OBR;
+    
+    const stats = ["Сила", "Ловкость", "Телосложение", "Интеллект", "Мудрость", "Харизма"];
+    const skills = [
+        { name: "Атлетика", base: "Сила" },
+        { name: "Акробатика", base: "Ловкость" },
+        { name: "Скрытность", base: "Ловкость" },
+        { name: "Магия", base: "Интеллект" },
+        { name: "Восприятие", base: "Мудрость" }
+    ];
 
-    async function rollStat(statName) {
-      const val = document.getElementById('strength').value;
-      const modifier = Math.floor((val - 10) / 2);
-      const roll = Math.floor(Math.random() * 20) + 1;
-      const total = roll + modifier;
+    // Инициализация интерфейса
+    function init() {
+        const statsHtml = stats.map(s => `
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">${s}</span>
+                    <input type="number" class="stat-main-input" id="val_${s}" value="10" onchange="updateAll()">
+                </div>
+                <div class="sub-stat"><span>Проверка</span> <span class="mod-val" id="mod_${s}">+0</span></div>
+                <div class="sub-stat"><span>Спасбросок</span> <span class="mod-val" id="save_${s}">+0</span></div>
+            </div>
+        `).join('');
+        document.getElementById('statsContainer').innerHTML = statsHtml;
 
-      // Отправка сообщения в чат Owlbear (зависит от настроек комнаты)
-      console.log(`Бросок ${statName}: ${roll} + ${modifier} = ${total}`);
-      
-      // Пример уведомления игроков (если есть права)
-      await OBR.notification.show(`Игрок выбросил ${statName}: ${total}`);
+        const skillsHtml = skills.map(sk => `
+            <div class="skill-item">
+                <div class="skill-dot" id="dot_${sk.name}" onclick="toggleSkill('${sk.name}')"></div>
+                <span class="skill-name">${sk.name} <small>(${sk.base[0]})</small></span>
+                <span class="skill-mod" id="skmod_${sk.name}">+0</span>
+            </div>
+        `).join('');
+        document.getElementById('skillsContainer').innerHTML = skillsHtml;
+    }
+
+    function calculateMod(val) {
+        return Math.floor((val - 10) / 2);
+    }
+
+    function updateAll() {
+        stats.forEach(s => {
+            const val = document.getElementById(`val_${s}`).value;
+            const mod = calculateMod(val);
+            const modText = (mod >= 0 ? "+" : "") + mod;
+            document.getElementById(`mod_${s}`).innerText = modText;
+            document.getElementById(`save_${s}`).innerText = modText;
+        });
+
+        skills.forEach(sk => {
+            const baseMod = calculateMod(document.getElementById(`val_${sk.base}`).value);
+            const isProficient = document.getElementById(`dot_${sk.name}`).classList.contains('active');
+            const profBonus = isProficient ? 2 : 0; // Можно привязать к уровню
+            const total = baseMod + profBonus;
+            document.getElementById(`skmod_${sk.name}`).innerText = (total >= 0 ? "+" : "") + total;
+        });
+        saveData();
+    }
+
+    function toggleSkill(name) {
+        document.getElementById(`dot_${name}`).classList.toggle('active');
+        updateAll();
+    }
+
+    // Взаимодействие с Owlbear Rodeo
+    async function saveData() {
+        const data = {
+            name: document.getElementById('charName').value,
+            level: document.getElementById('level').value,
+            stats: stats.reduce((acc, s) => ({...acc, [s]: document.getElementById(`val_${s}`).value}), {}),
+            proficiencies: skills.filter(sk => document.getElementById(`dot_${sk.name}`).classList.contains('active')).map(sk => sk.name)
+        };
+        
+        // Сохраняем в метаданные игрока в комнате
+        await OBR.player.setMetadata({ "custom_sheet_data": data });
+    }
+
+    async function loadData() {
+        const metadata = await OBR.player.getMetadata();
+        const data = metadata["custom_sheet_data"];
+        if (data) {
+            document.getElementById('charName').value = data.name;
+            document.getElementById('level').value = data.level;
+            for (let s in data.stats) {
+                if(document.getElementById(`val_${s}`)) document.getElementById(`val_${s}`).value = data.stats[s];
+            }
+            data.proficiencies.forEach(p => {
+                const dot = document.getElementById(`dot_${p}`);
+                if(dot) dot.classList.add('active');
+            });
+            updateAll();
+        }
     }
 
     OBR.onReady(() => {
-      console.log("Лист персонажа готов к работе в Owlbear Rodeo!");
+        init();
+        loadData();
     });
-  </script>
+</script>
+
 </body>
 </html>
