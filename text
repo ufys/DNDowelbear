@@ -1,0 +1,36 @@
+dnd-sheet-owlbear/
+├── public/
+│   ├── icons/
+│   │   ├── icon-16.png        (заглушка – замените на реальную иконку)
+│   │   ├── icon-32.png
+│   │   ├── icon-48.png
+│   │   ├── icon-128.png
+│   │   └── toolbar-icon.svg   (иконка для кнопки в панели)
+│   └── popup.html             (HTML-страница для popup)
+├── src/
+│   ├── components/
+│   │   ├── MainSheet.tsx
+│   │   ├── AttacksTab.tsx
+│   │   ├── FeaturesTab.tsx
+│   │   ├── EquipmentTab.tsx
+│   │   ├── PersonalityTab.tsx
+│   │   ├── GoalsTab.tsx
+│   │   ├── NotesTab.tsx
+│   │   ├── SpellsTab.tsx
+│   │   ├── SkillProficiency.tsx
+│   │   └── SpellCard.tsx
+│   ├── hooks/
+│   │   ├── useCharacterStorage.ts
+│   │   └── useEditMode.ts
+│   ├── types/
+│   │   └── character.ts
+│   ├── styles/
+│   │   └── main.css
+│   ├── App.tsx
+│   ├── index.ts
+│   └── popup.tsx
+├── manifest.json
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── README.md (краткая инструкция)
